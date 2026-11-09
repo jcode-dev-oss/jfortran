@@ -1,0 +1,40 @@
+fun add (int x, int y) : int {
+    return xa + ya;
+}
+
+fun div (int x, int y) : int {
+    return x / y;
+}
+
+fun sub (int x, int y) : int {
+    return x - y;
+}
+
+fun mul (int x, int y) : int {
+    return x * y;
+}
+
+fun min (int x, int y) : int {
+    if (x <= y) then
+        return x;
+    else
+        return y;
+}
+
+fun max (int x, int y) : int {
+    if (x >= y) then
+        return x;
+    else
+        return y;
+}
+
+fun abs(int x) : int {
+    if (x >= 0) then
+        return x;
+    else
+        return -x;
+}
+
+fun main () : void {
+    print(mul(add(10,5),4));
+}
