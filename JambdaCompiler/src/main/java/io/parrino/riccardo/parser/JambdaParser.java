@@ -133,6 +133,23 @@ public class JambdaParser {
         );
     }
 
+    private Expr parseFuncAppWithGivenName(String functionName) {
+        Token lparen = this.expect(Token.LPAREN);
+        List<Param> params = this.parseParamList();
+        Token rparen = this.expect(Token.RPAREN);
+        Token semicolon = this.expect(Token.SEMICOLON);
+
+        FuncApp funcApp = new FuncApp(
+                functionName,
+                lparen,
+                params,
+                rparen,
+                semicolon
+        );
+
+        return funcApp;
+    }
+
     private Expr parseFuncApp() {
         // will return
         // what to do with space?
@@ -172,10 +189,17 @@ public class JambdaParser {
         switch(tok) {
             case Token.LITERAL:
                 this.next0();
-                return new Param(tok.getValue(), null);
+                String literal = tok.getValue();
+                if (this.tok == Token.LPAREN) {
+                    Expr funcApp = this.parseFuncAppWithGivenName(literal);
+                    return new Param(null, null, funcApp);
+                } else {
+                    this.next0();
+                    return new Param(literal, null, null);
+                }
             case Token.NUMERIC:
                 this.next0();
-                return new Param(null, tok);
+                return new Param(null, tok, null);
             default:
                 throw new IllegalArgumentException("Please, fix your parameters function invocation!");
         }
