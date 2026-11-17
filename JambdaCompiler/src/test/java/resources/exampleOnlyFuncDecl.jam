@@ -1,0 +1,22 @@
+fun myFunction1 (int a, int b) : int {}
+
+fun myFunction2 (int a, int b, int c) : int {
+    return;
+}
+
+fun myFunction3 (int a, int b, int c) : int {
+    return a;
+}
+
+fun main () : void {
+    myFunction3(a,b,c);
+}
+
+fun myFunction4(int a, int b) : int {
+    return a + b;
+}
+
+fun myFunction2 (int a, int b, int c) : int {
+    return myFunction(b,c);
+}
+
