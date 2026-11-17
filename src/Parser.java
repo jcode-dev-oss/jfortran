@@ -49,13 +49,61 @@ abstract class Expr extends Node {
 abstract class Stmt extends Node {
 }
 
+class EmptyStmt extends Stmt {
+    @Override
+    void bytecodeGenerator(){}
+}
+
+class BlockStmt extends Stmt{
+    Token lbracket;
+    List<Stmt> stmts;
+    Token rbracket;
+
+    BlockStmt(){}
+    BlockStmt(Token lbracket,List<Stmt> stmts,Token rbracket){
+        this.lbracket = lbracket;
+        this.stmts = stmts;
+        this.rbracket = rbracket;
+    }
+
+    @Override
+    void bytecodeGenerator(){}
+}
+
+class ReturnStmt extends Stmt {
+    Token tok;
+    Expr expr;
+
+    ReturnStmt(){}
+    ReturnStmt(Token tok, Expr expr){
+        this.tok = tok;
+        this.expr = expr;
+    }
+
+    @Override
+    void bytecodeGenerator(){}
+}
+
+class ParenExpr extends Expr {
+    Token lparen;
+    Expr x;
+    Token rparen;
+
+    ParenExpr(){}
+    ParenExpr(Token lparen, Expr x, Token rparen){
+        this.lparen = lparen;
+        this.x = x;
+        this.rparen = rparen;
+    }
+}
+
 class FieldList {
     Token openingToken;
     List<Field> fields;
     Token closingToken;
 
     FieldList(){}
-    FieldList(Token openingToken, List<Token> fields, Token closingToken) {
+    FieldList(Token openingToken, List<Field> fields, Token closingToken) {
         this.openingToken = openingToken;
         this.fields = fields;
         this.closingToken = closingToken;
@@ -156,8 +204,9 @@ class JambdaParser {
     }
 
     public Decl parseDecl() {
+        Token pos = this.tok;
         switch (this.tok) {
-            case Token.FUNCTION:
+            case Token.FUN:
                 return this.parseFuncDecl();
             default:
                 throw new IllegalArgumentException("Error occurred in parsing file: no valid token declaration found!");
@@ -167,7 +216,7 @@ class JambdaParser {
     private Token expect(Token tok) {
         Token pos = this.tok;
         if (this.pos != tok)
-            throw new IIllegalArgumentException("Expected " + tok + " token, but " + this.pos + " found!");
+            throw new IllegalArgumentException("Expected " + tok + " token, but " + this.pos + " found!");
 
         this.next();
         return pos;
@@ -190,23 +239,32 @@ class JambdaParser {
 
     private Field parseParamDecl() {
         var tok = this.tok;
-
+        Token name;
         switch (tok) {
-            case Token.INT | Token.REAL | Token.LOGICAL | Token.CHAR:
-                p.next();
-                var name = this.parseIdent();
+            case Token.INT:
+                this.next0();
+                name = this.parseIdent();
+                return new Field(tok, name);
+            case Token.REAL:
+                name = this.parseIdent();
+                return new Field(tok, name);
+            case Token.LOGICAL:
+                name = this.parseIdent();
+                return new Field(tok, name);
+            case Token.CHAR:
+                name = this.parseIdent();
                 return new Field(tok, name);
             default:
                 throw new IllegalArgumentException("Please, fix you type in function declaration!");
         }
     }
 
-    private List<Field> parseParameterList(Token name0, Token typ0, Toke closingToken, Boolean dddok) {
+    private List<Field> parseParameterList(Token name0, Token typ0, Token closingToken, Boolean dddok) {
         List<Field> fields = new ArrayList<>();
         for (; this.tok != closingToken; ) {
             Field par = this.parseParamDecl();
             fields.add(par);
-            if !(this.atComma()) {
+            if (!this.atComma()) {
                 break;
             }
             this.next0();
@@ -234,7 +292,7 @@ class JambdaParser {
 
     private FuncDecl parseFuncDecl() {
 
-        Token p = this.expect(token.FUNCTION);
+        Token p = this.expect(Token.FUN);
         Token functionName = this.parseIdent();
         FieldList fieldList;
         if (this.tok == Token.LPAREN) {
@@ -244,20 +302,138 @@ class JambdaParser {
 
         Token semicolon = this.expect(Token.SEMICOLON);
 
-        Token returnType = this.expect(List.of(Token.INT....);
+        Token returnType = this.expect(Token.INT); // to be generalized to one or more types
 
         BlockStmt body;
         switch (this.tok) {
-            case Token.LBRACE:
+            case Token.LBRACK:
                 body = this.parseBody();
             default:
                 throw new IllegalArgumentException("You should define your function body in function: " + functionName.getValue()+"!");
         }
 
         var funcDecl = new FuncDecl();
-        funcDecl.
+        funcDecl.params = fieldList.fields;
+        funcDecl.returnType = returnType;
+        funcDecl.body = body;
+        funcDecl.functionName = functionName;
 
+        return funcDecl;
+    }
+
+    private BlockStmt parseBody () {
+        var lbrack = this.expect(Token.LBRACK);
+        var list = this.parseStmtList();
+        var rbrack = this.expect(Token.RBRACK);
+        return new BlockStmt(
+                lbrack,
+                list,
+                rbrack);
+    }
+
+    private List<Stmt> parseStmtList() {
+        List<Stmt> stmts = new ArrayList<>();
+        while (this.tok != Token.RBRACK) {
+            stmts.add(parseStmt());
+        }
+        return stmts;
+    }
+
+    private Stmt parseStmt() {
+        switch (this.tok) {
+            case Token.LITERAL:
+                return this.parseSimpleStmt();
+            case Token.RETURN:
+                return this.parseReturnStmt();
+            case Token.RBRACK:
+                return new EmptyStmt();
+        }
+    }
+
+    private Stmt parseReturnStmt() {
+        this.expect(Token.RETURN);
+        Expr e;
+        if (this.tok != Token.SEMICOLON && this.tok != Token.RBRACK) {
+            e = this.parseList();
+        }
+        return new ReturnStmt(this.tok, e);
+    }
+
+    private List<Expr> parseSimpleStmt() {
+        var s = this.parseList();
+        return s;
+    }
+    
+    private List<Expr> parseList() {
+        return this.parseExprList();
+    }
+
+    private List<Expr> parseExprList() {
+        List<Expr> exprList = new ArrayList<>();
+        exprList.add(this.parseExpr());
+        while(this.tok == Token.COMMA) {
+            this.next0();
+            exprList.add(this.parseExpr());
+        }
+        return exprList;
+    }
+
+    private Expr parseExpr() {
+        return this.parseBinaryExpr(null, 1);
+    }
+
+    private Expr parseBinaryExpr(Expr x, int precedence) {
+        if (x == null)
+            x = this.parseUnaryExpr();
+
+        return x;
+    }
+
+    private Expr parseUnaryExpr() {
+        return this.parsePrimaryExpr(null);
+    }
+
+    private Expr parsePrimaryExpr(Expr x) {
+        if (x == null) {
+            x = parseOperand();
+        }
+        return x;
+    }
+
+    private Expr parseOperand() {
+        switch (this.tok) {
+            case Token.LITERAL:
+                return this.parseIdent();
+            case Token.LPAREN:
+                var lparen = this.tok;
+                this.next0();
+                var x = this.parseRhs();
+                var rparen = this.expect(Token.RPAREN);
+                return new ParenExpr(
+                        lparen,
+                        x,
+                        rparen
+                );
+            case Token.FUN:
+                return this.parseFuncTypeOrLit();
+        }
+    }
+
+    // TODO
+    private Expr parseFuncTypeOrLit(){
         return null;
+    }
+
+    private CallExpr parseCallOrConversion(Expr fun) {
+        var lparen = this.expect(Token.LPAREN);
+        List<Expr> list = new ArrayList<>();
+        while (this.tok != Token.RPAREN) {
+            list.add(this.parseRhs());
+        }
+    }
+
+    private Expr parseRhs() {
+        return this.parseExpr();
     }
 
 }
