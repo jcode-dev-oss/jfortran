@@ -1,2 +1,2 @@
-# jfortran
-Fortran implementation for Hotspot JVM.
+# jambda
+Implementation of lambda function language targeting the Hotspot JVM.
