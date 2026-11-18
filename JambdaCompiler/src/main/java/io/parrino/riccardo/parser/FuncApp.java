@@ -70,14 +70,14 @@ public class FuncApp extends Expr {
         return null;
     }
 
-    @Override
-    public String toString() {
-        return this.functionName
-                + this.lparen.getValue() + " "
-                + this.params.stream().map(p -> p.toString()).map(p -> p+", ").reduce( (a,b) -> a+b ) + " "
-                + this.rparen.getValue() + " "
-                + this.semicolon.getValue();
-    }
+//    @Override
+//    public String toString() {
+//        return this.functionName
+//                + this.lparen.getValue() + " "
+//                + this.params.stream().map(p -> p.toString()).map(p -> p+", ").reduce( (a,b) -> a+b ) + " "
+//                + this.rparen.getValue() + " "
+//                + this.semicolon.getValue();
+//    }
 
 //    public void myFunction(int a, int b) {
 //        myFunction2(a,b);

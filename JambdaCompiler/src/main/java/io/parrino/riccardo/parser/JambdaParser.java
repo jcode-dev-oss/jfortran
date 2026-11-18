@@ -133,6 +133,22 @@ public class JambdaParser {
         );
     }
 
+    private Expr parseFuncAppInParameterWithGivenName(String functionName) {
+        Token lparen = this.expect(Token.LPAREN);
+        List<Param> params = this.parseParamList();
+        Token rparen = this.expect(Token.RPAREN);
+
+        FuncApp funcApp = new FuncApp(
+                functionName,
+                lparen,
+                params,
+                rparen,
+                null
+        );
+
+        return funcApp;
+    }
+
     private Expr parseFuncAppWithGivenName(String functionName) {
         Token lparen = this.expect(Token.LPAREN);
         List<Param> params = this.parseParamList();
@@ -191,10 +207,9 @@ public class JambdaParser {
                 this.next0();
                 String literal = tok.getValue();
                 if (this.tok == Token.LPAREN) {
-                    Expr funcApp = this.parseFuncAppWithGivenName(literal);
+                    Expr funcApp = this.parseFuncAppInParameterWithGivenName(literal);
                     return new Param(null, null, funcApp);
                 } else {
-                    this.next0();
                     return new Param(literal, null, null);
                 }
             case Token.NUMERIC:
@@ -235,14 +250,12 @@ public class JambdaParser {
 
     public List<Node> ast() {
         List<Node> ast = new ArrayList<>();
-        try {
-            while (true) {
-                var node = this.next();
-                ast.add(node);
-            }
-        } catch (Exception e) {
-            System.out.println("Reached EOF without errors!!");
-        } 
+        int i = 0;
+        while (i < 4) {
+            var node = this.next();
+            ast.add(node);
+            i++;
+        }
         return ast;
     }
 

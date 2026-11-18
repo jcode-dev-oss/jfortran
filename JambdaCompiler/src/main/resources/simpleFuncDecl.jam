@@ -1,0 +1,15 @@
+fun myMul3(int a, int b, int c) : int {
+    return id(a);
+}
+
+fun myAdd(int a, int b) : int {
+    return add(a,b);
+}
+
+fun myMul(int a, int b) : int {
+    return mul(a,b);
+}
+
+fun main () : int {
+    return mul(10,11);
+}

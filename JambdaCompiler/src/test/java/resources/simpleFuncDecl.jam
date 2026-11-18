@@ -1,13 +1,13 @@
+fun myMul3(int a, int b, int c) : int {
+    return mul(a, mul(b,c));
+}
+
 fun myAdd(int a, int b) : int {
     return add(a,b);
 }
 
 fun myMul(int a, int b) : int {
     return mul(a,b);
-}
-
-fun myMul3(int a, int b, int c) : int {
-    return mul(a, mul(b,c));
 }
 
 fun main () : int {
