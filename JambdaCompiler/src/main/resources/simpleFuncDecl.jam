@@ -1,5 +1,5 @@
 fun myMul3(int a, int b, int c) : int {
-    return id(a);
+    return mul(a, mul(b,c));
 }
 
 fun myAdd(int a, int b) : int {
